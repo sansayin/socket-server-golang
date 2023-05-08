@@ -21,7 +21,7 @@ import (
 const (
 	SERVER_HOST       = "0.0.0.0"
 	SERVER_PORT       = "9988"
-	MAX_PROC_ROUTINES = 2000
+	MAX_PROC_ROUTINES = 20000
 	SOCKET_TIMEOUT    = 100
 	LONG_CONNECTION   = true 
 	DEBUG_MODE        = true
@@ -108,12 +108,7 @@ func main() {
 		}
 	}()
 
-	server = net.NewSocketServer(
-		MAX_PROC_ROUTINES,
-		LONG_CONNECTION,
-		DEBUG_MODE,
-	)
-
+  server := net.NewSocketServer(net.WithMaxRoutines(MAX_PROC_ROUTINES),net.WithDebug(true), net.WithLongConn(true))
 	//server.AddServant(&net.ProtoBufServant{Id: 1})
 	server.AddServant(&net.HttpServant{Id: 2, StaticRoot: "./static"})
 

@@ -19,8 +19,9 @@ type IServant interface {
 	OnRequest(net.Conn, []byte) []byte
 }
 
-type SocketServer struct {
-	max_rountins    chan struct{}
+type Opts struct {
+	ch_rountins     chan struct{}
+	max_routins     int
 	stop            bool
 	ip_addr         string
 	port            string
@@ -30,22 +31,53 @@ type SocketServer struct {
 	long_connection bool
 	clients         *utils.ClientDisct
 	debug           bool
-	mutex           sync.Mutex
+	mutex           *sync.Mutex
 }
 
-func NewSocketServer(max int, long bool, debug bool) *SocketServer {
-	maxChan := make(chan struct{}, max)
-	for i := 0; i < max; i++ {
-		maxChan <- void
+type SocketServer struct {
+	Opts
+}
+
+type OptsFunc func(*Opts)
+
+func defaultOpts() Opts {
+	return Opts{}
+}
+
+func WithMaxRoutines(n int) OptsFunc {
+	max_routins := make(chan struct{}, n)
+	for i := 0; i < n; i++ {
+		max_routins <- void
+	}
+	return func(opts *Opts) {
+		opts.ch_rountins = max_routins
+	}
+}
+
+func WithLongConn(long bool) OptsFunc {
+	return func(opts *Opts) {
+		opts.long_connection = long
+	}
+}
+
+func WithDebug(debug bool) OptsFunc {
+	return func(opts *Opts) {
+		opts.debug = debug
+	}
+}
+
+func NewSocketServer(opts ...OptsFunc) *SocketServer {
+	options := defaultOpts()
+	for _, fn := range opts {
+		fn(&options)
 	}
 	servants := make(map[IServant]struct{}, 0)
 	clients := utils.NewClientDict()
+	options.servants = servants
+	options.clients = clients
+	options.mutex = &sync.Mutex{}
 	return &SocketServer{
-		max_rountins:    maxChan,
-		servants:        servants,
-		long_connection: long,
-		clients:         clients,
-		debug:           debug,
+		options,
 	}
 }
 
@@ -67,7 +99,7 @@ func (ss *SocketServer) StartTCP(ipAddr string, port string) error {
 		for {
 			select {
 			case <-done:
-				ss.max_rountins <- void
+				ss.ch_rountins <- void
 			}
 		}
 	}()
@@ -78,7 +110,7 @@ func (ss *SocketServer) StartTCP(ipAddr string, port string) error {
 			continue
 		}
 		//L("Client: %v connected", connection.RemoteAddr())
-		<-ss.max_rountins
+		<-ss.ch_rountins
 		go ss.processTcpClient(connection, done)
 	}
 }
@@ -88,10 +120,10 @@ func (ss *SocketServer) processTcpClient(conn net.Conn, done chan bool) {
 	buffer := make([]byte, 1024)
 
 	defer func() {
-		//L("Client: %v left", conn)
 		ss.clients.Del(&conn)
 		done <- true
 	}()
+
 	//use loop for long-connection-socket case
 	for {
 		if ss.long_connection && !ss.debug { //still need timeout when client silence too long
@@ -127,7 +159,7 @@ func (ss *SocketServer) StartUDP(port string) error {
 		for {
 			select {
 			case <-done:
-				ss.max_rountins <- void
+				ss.ch_rountins <- void
 			}
 		}
 	}()
@@ -137,7 +169,7 @@ func (ss *SocketServer) StartUDP(port string) error {
 		if err != nil {
 			continue
 		}
-		<-ss.max_rountins
+		<-ss.ch_rountins
 		go ss.processUdpClient(addr, buf[0:length], done)
 	}
 }
