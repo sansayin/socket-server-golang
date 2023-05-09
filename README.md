@@ -1,4 +1,4 @@
-![dev-env](screenshot-1)
+![dev-env](screenshot-1.png)
 # socket-server-go
 This is just reinvent the wheel, keep in mind that golang already has epoll support natively.
 ## Use buffered channel to limit number of go routines
