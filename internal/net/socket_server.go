@@ -3,7 +3,7 @@ package net
 import (
 	"log"
 	"net"
-	"pattern/utils"
+	"pattern/internal/utils"
 	"sync"
 	"time"
 )
@@ -115,10 +115,11 @@ func (ss *SocketServer) StartTCP(ipAddr string, port string) error {
 	}
 }
 
+
 func (ss *SocketServer) processTcpClient(conn net.Conn, done chan bool) {
 	ss.clients.Add(&conn)
 	buffer := make([]byte, 1024)
-
+	//  buf := packetPool.Get().([]byte)
 	defer func() {
 		ss.clients.Del(&conn)
 		done <- true
@@ -207,7 +208,7 @@ func (ss *SocketServer) BroadCast(msg string) {
 	}
 }
 
-func (ss *SocketServer) Stop() <-chan time.Time {
+func (ss *SocketServer) Stop(){
 	//		ss.stop = true
 	L("Shuting down ...")
 	for servant := range ss.servants {
@@ -221,5 +222,5 @@ func (ss *SocketServer) Stop() <-chan time.Time {
 		}
 		ss.clients.Del(c)
 	}
-	return time.After(1 * time.Second)
+	//return time.After(1 * time.Second)
 }
