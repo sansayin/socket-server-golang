@@ -32,6 +32,7 @@ type Opts struct {
 	clients         *utils.ClientDisct
 	debug           bool
 	mutex           *sync.Mutex
+	enableProm      bool
 }
 
 type SocketServer struct {
@@ -66,6 +67,11 @@ func WithDebug(debug bool) OptsFunc {
 	}
 }
 
+func WithPrometheus() OptsFunc {
+	return func(opts *Opts) {
+		opts.enableProm = true
+	}
+}
 func NewSocketServer(opts ...OptsFunc) *SocketServer {
 	options := defaultOpts()
 	for _, fn := range opts {
@@ -80,7 +86,6 @@ func NewSocketServer(opts ...OptsFunc) *SocketServer {
 		options,
 	}
 }
-
 func (ss *SocketServer) NumGoRoutine() int {
 	return len(ss.clients.Get())
 }
@@ -114,7 +119,6 @@ func (ss *SocketServer) StartTCP(ipAddr string, port string) error {
 		go ss.processTcpClient(connection, done)
 	}
 }
-
 
 func (ss *SocketServer) processTcpClient(conn net.Conn, done chan bool) {
 	ss.clients.Add(&conn)
@@ -208,7 +212,7 @@ func (ss *SocketServer) BroadCast(msg string) {
 	}
 }
 
-func (ss *SocketServer) Stop(){
+func (ss *SocketServer) Stop() {
 	//		ss.stop = true
 	L("Shuting down ...")
 	for servant := range ss.servants {

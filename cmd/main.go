@@ -38,19 +38,18 @@ var (
 )
 
 type metrics struct {
-	devices prometheus.Gauge
-	info    *prometheus.GaugeVec
+	routines  prometheus.Gauge
 }
 
 func NewMetrics(reg prometheus.Registerer) *metrics {
 	m := &metrics{
-		devices: prometheus.NewGauge(prometheus.GaugeOpts{
+		routines: prometheus.NewGauge(prometheus.GaugeOpts{
 			Namespace: "socket_server",
-			Name:      "connected_devices",
-			Help:      "Number of currently connected devices.",
+			Name:      "runing_routines",
+			Help:      "Number of currently running routines.",
 		}),
 	}
-	reg.MustRegister(m.devices)
+	reg.MustRegister(m.routines)
 	return m
 }
 
@@ -77,7 +76,7 @@ func main() {
 	reg := prometheus.NewRegistry()
 	reg.MustRegister(collectors.NewGoCollector())
 	socket_metrics := NewMetrics(reg)
-	socket_metrics.devices.Set(0)
+	socket_metrics.routines.Set(1)
 
 	promHandler := promhttp.HandlerFor(reg, promhttp.HandlerOpts{})
 
@@ -103,9 +102,11 @@ func main() {
 				ticker.Stop()
 				server.Stop()
 				stop()
-                os.Exit(0)
+				os.Exit(0)
 			case <-ticker.C:
 				L("Running Routins: %v\n", runtime.NumGoroutine())
+				socket_metrics.routines.Set(float64(runtime.NumGoroutine()))
+
 			}
 		}
 	}()

@@ -25,7 +25,7 @@ func main() {
 	log.Printf("connecting to %s", addr)
 	var conns []net.Conn
 	for i := 0; i < *connections; i++ {
-		c, err := net.DialTimeout("tcp", addr, 10*time.Second)
+		c, err := net.DialTimeout("tcp", addr, 1*time.Second)
 		if err != nil {
 			fmt.Println("failed to connect", i, err)
 			i--
