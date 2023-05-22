@@ -21,7 +21,6 @@ type IServant interface {
 
 type Opts struct {
 	ch_rountins     chan struct{}
-	max_routins     int
 	stop            bool
 	ip_addr         string
 	port            string
@@ -29,7 +28,7 @@ type Opts struct {
 	udp_server      net.PacketConn
 	servants        map[IServant]struct{}
 	long_connection bool
-	clients         *utils.ClientDisct
+	clients         *utils.ClientDict
 	debug           bool
 	mutex           *sync.Mutex
 	enableProm      bool
@@ -46,12 +45,12 @@ func defaultOpts() Opts {
 }
 
 func WithMaxRoutines(n int) OptsFunc {
-	max_routins := make(chan struct{}, n)
-	for i := 0; i < n; i++ {
-		max_routins <- void
-	}
 	return func(opts *Opts) {
-		opts.ch_rountins = max_routins
+
+		opts.ch_rountins = make(chan struct{}, n)
+		for i := 0; i < n; i++ {
+			opts.ch_rountins <- void
+		}
 	}
 }
 
@@ -114,7 +113,7 @@ func (ss *SocketServer) StartTCP(ipAddr string, port string) error {
 			L("Error accepting: %v\n", err.Error())
 			continue
 		}
-		//L("Client: %v connected", connection.RemoteAddr())
+		L("Client: %v connected", connection.RemoteAddr())
 		<-ss.ch_rountins
 		go ss.processTcpClient(connection, done)
 	}
@@ -123,8 +122,9 @@ func (ss *SocketServer) StartTCP(ipAddr string, port string) error {
 func (ss *SocketServer) processTcpClient(conn net.Conn, done chan bool) {
 	ss.clients.Add(&conn)
 	buffer := make([]byte, 1024)
-	//  buf := packetPool.Get().([]byte)
 	defer func() {
+        L("Close Connection %v", conn)
+        conn.Close()
 		ss.clients.Del(&conn)
 		done <- true
 	}()

@@ -25,6 +25,8 @@ type HttpServant struct {
 	mime       sync.Map
 }
 
+
+
 // Only GET Roughly Implemented
 func (h *HttpServant) OnRequest(conn net.Conn, msg []byte) []byte {
 	once.Do(func() {

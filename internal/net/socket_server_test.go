@@ -2,18 +2,105 @@ package net
 
 import (
 	"net"
-	"pattern/utils"
 	"reflect"
-	"sync"
 	"testing"
-	"time"
 )
+
+func Test_defaultOpts(t *testing.T) {
+	tests := []struct {
+		name string
+		want Opts
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := defaultOpts(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("defaultOpts() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestWithMaxRoutines(t *testing.T) {
+	type args struct {
+		n int
+	}
+	tests := []struct {
+		name string
+		args args
+		want OptsFunc
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := WithMaxRoutines(tt.args.n); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("WithMaxRoutines() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestWithLongConn(t *testing.T) {
+	type args struct {
+		long bool
+	}
+	tests := []struct {
+		name string
+		args args
+		want OptsFunc
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := WithLongConn(tt.args.long); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("WithLongConn() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestWithDebug(t *testing.T) {
+	type args struct {
+		debug bool
+	}
+	tests := []struct {
+		name string
+		args args
+		want OptsFunc
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := WithDebug(tt.args.debug); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("WithDebug() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestWithPrometheus(t *testing.T) {
+	tests := []struct {
+		name string
+		want OptsFunc
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := WithPrometheus(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("WithPrometheus() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
 
 func TestNewSocketServer(t *testing.T) {
 	type args struct {
-		max   int
-		long  bool
-		debug bool
+		opts []OptsFunc
 	}
 	tests := []struct {
 		name string
@@ -24,7 +111,7 @@ func TestNewSocketServer(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewSocketServer(tt.args.max, tt.args.long, tt.args.debug); !reflect.DeepEqual(got, tt.want) {
+			if got := NewSocketServer(tt.args.opts...); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewSocketServer() = %v, want %v", got, tt.want)
 			}
 		})
@@ -33,17 +120,7 @@ func TestNewSocketServer(t *testing.T) {
 
 func TestSocketServer_NumGoRoutine(t *testing.T) {
 	type fields struct {
-		max_rountins    chan struct{}
-		stop            bool
-		ip_addr         string
-		port            string
-		tcp_server      net.Listener
-		udp_server      net.PacketConn
-		servants        map[IServant]struct{}
-		long_connection bool
-		clients         *utils.ClientDisct
-		debug           bool
-		mutex           sync.Mutex
+		Opts Opts
 	}
 	tests := []struct {
 		name   string
@@ -55,17 +132,7 @@ func TestSocketServer_NumGoRoutine(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ss := &SocketServer{
-				max_rountins:    tt.fields.max_rountins,
-				stop:            tt.fields.stop,
-				ip_addr:         tt.fields.ip_addr,
-				port:            tt.fields.port,
-				tcp_server:      tt.fields.tcp_server,
-				udp_server:      tt.fields.udp_server,
-				servants:        tt.fields.servants,
-				long_connection: tt.fields.long_connection,
-				clients:         tt.fields.clients,
-				debug:           tt.fields.debug,
-				mutex:           tt.fields.mutex,
+				Opts: tt.fields.Opts,
 			}
 			if got := ss.NumGoRoutine(); got != tt.want {
 				t.Errorf("SocketServer.NumGoRoutine() = %v, want %v", got, tt.want)
@@ -76,17 +143,7 @@ func TestSocketServer_NumGoRoutine(t *testing.T) {
 
 func TestSocketServer_StartTCP(t *testing.T) {
 	type fields struct {
-		max_rountins    chan struct{}
-		stop            bool
-		ip_addr         string
-		port            string
-		tcp_server      net.Listener
-		udp_server      net.PacketConn
-		servants        map[IServant]struct{}
-		long_connection bool
-		clients         *utils.ClientDisct
-		debug           bool
-		mutex           sync.Mutex
+		Opts Opts
 	}
 	type args struct {
 		ipAddr string
@@ -103,17 +160,7 @@ func TestSocketServer_StartTCP(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ss := &SocketServer{
-				max_rountins:    tt.fields.max_rountins,
-				stop:            tt.fields.stop,
-				ip_addr:         tt.fields.ip_addr,
-				port:            tt.fields.port,
-				tcp_server:      tt.fields.tcp_server,
-				udp_server:      tt.fields.udp_server,
-				servants:        tt.fields.servants,
-				long_connection: tt.fields.long_connection,
-				clients:         tt.fields.clients,
-				debug:           tt.fields.debug,
-				mutex:           tt.fields.mutex,
+				Opts: tt.fields.Opts,
 			}
 			if err := ss.StartTCP(tt.args.ipAddr, tt.args.port); (err != nil) != tt.wantErr {
 				t.Errorf("SocketServer.StartTCP() error = %v, wantErr %v", err, tt.wantErr)
@@ -124,17 +171,7 @@ func TestSocketServer_StartTCP(t *testing.T) {
 
 func TestSocketServer_processTcpClient(t *testing.T) {
 	type fields struct {
-		max_rountins    chan struct{}
-		stop            bool
-		ip_addr         string
-		port            string
-		tcp_server      net.Listener
-		udp_server      net.PacketConn
-		servants        map[IServant]struct{}
-		long_connection bool
-		clients         *utils.ClientDisct
-		debug           bool
-		mutex           sync.Mutex
+		Opts Opts
 	}
 	type args struct {
 		conn net.Conn
@@ -150,17 +187,7 @@ func TestSocketServer_processTcpClient(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ss := &SocketServer{
-				max_rountins:    tt.fields.max_rountins,
-				stop:            tt.fields.stop,
-				ip_addr:         tt.fields.ip_addr,
-				port:            tt.fields.port,
-				tcp_server:      tt.fields.tcp_server,
-				udp_server:      tt.fields.udp_server,
-				servants:        tt.fields.servants,
-				long_connection: tt.fields.long_connection,
-				clients:         tt.fields.clients,
-				debug:           tt.fields.debug,
-				mutex:           tt.fields.mutex,
+				Opts: tt.fields.Opts,
 			}
 			ss.processTcpClient(tt.args.conn, tt.args.done)
 		})
@@ -169,17 +196,7 @@ func TestSocketServer_processTcpClient(t *testing.T) {
 
 func TestSocketServer_StartUDP(t *testing.T) {
 	type fields struct {
-		max_rountins    chan struct{}
-		stop            bool
-		ip_addr         string
-		port            string
-		tcp_server      net.Listener
-		udp_server      net.PacketConn
-		servants        map[IServant]struct{}
-		long_connection bool
-		clients         *utils.ClientDisct
-		debug           bool
-		mutex           sync.Mutex
+		Opts Opts
 	}
 	type args struct {
 		port string
@@ -195,17 +212,7 @@ func TestSocketServer_StartUDP(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ss := &SocketServer{
-				max_rountins:    tt.fields.max_rountins,
-				stop:            tt.fields.stop,
-				ip_addr:         tt.fields.ip_addr,
-				port:            tt.fields.port,
-				tcp_server:      tt.fields.tcp_server,
-				udp_server:      tt.fields.udp_server,
-				servants:        tt.fields.servants,
-				long_connection: tt.fields.long_connection,
-				clients:         tt.fields.clients,
-				debug:           tt.fields.debug,
-				mutex:           tt.fields.mutex,
+				Opts: tt.fields.Opts,
 			}
 			if err := ss.StartUDP(tt.args.port); (err != nil) != tt.wantErr {
 				t.Errorf("SocketServer.StartUDP() error = %v, wantErr %v", err, tt.wantErr)
@@ -216,17 +223,7 @@ func TestSocketServer_StartUDP(t *testing.T) {
 
 func TestSocketServer_processUdpClient(t *testing.T) {
 	type fields struct {
-		max_rountins    chan struct{}
-		stop            bool
-		ip_addr         string
-		port            string
-		tcp_server      net.Listener
-		udp_server      net.PacketConn
-		servants        map[IServant]struct{}
-		long_connection bool
-		clients         *utils.ClientDisct
-		debug           bool
-		mutex           sync.Mutex
+		Opts Opts
 	}
 	type args struct {
 		addr net.Addr
@@ -243,17 +240,7 @@ func TestSocketServer_processUdpClient(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ss := &SocketServer{
-				max_rountins:    tt.fields.max_rountins,
-				stop:            tt.fields.stop,
-				ip_addr:         tt.fields.ip_addr,
-				port:            tt.fields.port,
-				tcp_server:      tt.fields.tcp_server,
-				udp_server:      tt.fields.udp_server,
-				servants:        tt.fields.servants,
-				long_connection: tt.fields.long_connection,
-				clients:         tt.fields.clients,
-				debug:           tt.fields.debug,
-				mutex:           tt.fields.mutex,
+				Opts: tt.fields.Opts,
 			}
 			ss.processUdpClient(tt.args.addr, tt.args.buf, tt.args.done)
 		})
@@ -262,17 +249,7 @@ func TestSocketServer_processUdpClient(t *testing.T) {
 
 func TestSocketServer_AddServant(t *testing.T) {
 	type fields struct {
-		max_rountins    chan struct{}
-		stop            bool
-		ip_addr         string
-		port            string
-		tcp_server      net.Listener
-		udp_server      net.PacketConn
-		servants        map[IServant]struct{}
-		long_connection bool
-		clients         *utils.ClientDisct
-		debug           bool
-		mutex           sync.Mutex
+		Opts Opts
 	}
 	type args struct {
 		servant interface{ IServant }
@@ -287,17 +264,7 @@ func TestSocketServer_AddServant(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ss := &SocketServer{
-				max_rountins:    tt.fields.max_rountins,
-				stop:            tt.fields.stop,
-				ip_addr:         tt.fields.ip_addr,
-				port:            tt.fields.port,
-				tcp_server:      tt.fields.tcp_server,
-				udp_server:      tt.fields.udp_server,
-				servants:        tt.fields.servants,
-				long_connection: tt.fields.long_connection,
-				clients:         tt.fields.clients,
-				debug:           tt.fields.debug,
-				mutex:           tt.fields.mutex,
+				Opts: tt.fields.Opts,
 			}
 			ss.AddServant(tt.args.servant)
 		})
@@ -306,17 +273,7 @@ func TestSocketServer_AddServant(t *testing.T) {
 
 func TestSocketServer_RemoveServant(t *testing.T) {
 	type fields struct {
-		max_rountins    chan struct{}
-		stop            bool
-		ip_addr         string
-		port            string
-		tcp_server      net.Listener
-		udp_server      net.PacketConn
-		servants        map[IServant]struct{}
-		long_connection bool
-		clients         *utils.ClientDisct
-		debug           bool
-		mutex           sync.Mutex
+		Opts Opts
 	}
 	type args struct {
 		servant interface{ IServant }
@@ -331,17 +288,7 @@ func TestSocketServer_RemoveServant(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ss := &SocketServer{
-				max_rountins:    tt.fields.max_rountins,
-				stop:            tt.fields.stop,
-				ip_addr:         tt.fields.ip_addr,
-				port:            tt.fields.port,
-				tcp_server:      tt.fields.tcp_server,
-				udp_server:      tt.fields.udp_server,
-				servants:        tt.fields.servants,
-				long_connection: tt.fields.long_connection,
-				clients:         tt.fields.clients,
-				debug:           tt.fields.debug,
-				mutex:           tt.fields.mutex,
+				Opts: tt.fields.Opts,
 			}
 			ss.RemoveServant(tt.args.servant)
 		})
@@ -350,17 +297,7 @@ func TestSocketServer_RemoveServant(t *testing.T) {
 
 func TestSocketServer_BroadCast(t *testing.T) {
 	type fields struct {
-		max_rountins    chan struct{}
-		stop            bool
-		ip_addr         string
-		port            string
-		tcp_server      net.Listener
-		udp_server      net.PacketConn
-		servants        map[IServant]struct{}
-		long_connection bool
-		clients         *utils.ClientDisct
-		debug           bool
-		mutex           sync.Mutex
+		Opts Opts
 	}
 	type args struct {
 		msg string
@@ -375,17 +312,7 @@ func TestSocketServer_BroadCast(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ss := &SocketServer{
-				max_rountins:    tt.fields.max_rountins,
-				stop:            tt.fields.stop,
-				ip_addr:         tt.fields.ip_addr,
-				port:            tt.fields.port,
-				tcp_server:      tt.fields.tcp_server,
-				udp_server:      tt.fields.udp_server,
-				servants:        tt.fields.servants,
-				long_connection: tt.fields.long_connection,
-				clients:         tt.fields.clients,
-				debug:           tt.fields.debug,
-				mutex:           tt.fields.mutex,
+				Opts: tt.fields.Opts,
 			}
 			ss.BroadCast(tt.args.msg)
 		})
@@ -394,43 +321,20 @@ func TestSocketServer_BroadCast(t *testing.T) {
 
 func TestSocketServer_Stop(t *testing.T) {
 	type fields struct {
-		max_rountins    chan struct{}
-		stop            bool
-		ip_addr         string
-		port            string
-		tcp_server      net.Listener
-		udp_server      net.PacketConn
-		servants        map[IServant]struct{}
-		long_connection bool
-		clients         *utils.ClientDisct
-		debug           bool
-		mutex           sync.Mutex
+		Opts Opts
 	}
 	tests := []struct {
 		name   string
 		fields fields
-		want   <-chan time.Time
 	}{
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ss := &SocketServer{
-				max_rountins:    tt.fields.max_rountins,
-				stop:            tt.fields.stop,
-				ip_addr:         tt.fields.ip_addr,
-				port:            tt.fields.port,
-				tcp_server:      tt.fields.tcp_server,
-				udp_server:      tt.fields.udp_server,
-				servants:        tt.fields.servants,
-				long_connection: tt.fields.long_connection,
-				clients:         tt.fields.clients,
-				debug:           tt.fields.debug,
-				mutex:           tt.fields.mutex,
+				Opts: tt.fields.Opts,
 			}
-			if got := ss.Stop(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("SocketServer.Stop() = %v, want %v", got, tt.want)
-			}
+			ss.Stop()
 		})
 	}
 }

@@ -9,11 +9,11 @@ proto:
 	cd message &&  protoc --go_out=. message.proto
 
 gen-tests:
-	cd net && gotests -all -w http_servant.go \
+	cd internal/net && gotests -all -w http_servant.go \
 		&& gotests -all -w protobuf_servant.go \
 		&& gotests -all -w socket_server.go
-	cd utils && gotests -all -w client_dict.go \
-		gotests -all -w safe_counter.go
+	cd internal/utils && gotests -all -w client_dict.go \
+		&& gotests -all -w safe_counter.go
 
 tests:
 	go test ./... -v

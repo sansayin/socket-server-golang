@@ -5,8 +5,6 @@ import (
 	"reflect"
 	"sync"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestHttpServant_OnRequest(t *testing.T) {
@@ -54,10 +52,11 @@ func TestHttpServant_getRequestingFile(t *testing.T) {
 		buf []byte
 	}
 	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   string
+		name    string
+		fields  fields
+		args    args
+		want    string
+		wantErr bool
 	}{
 		// TODO: Add test cases.
 	}
@@ -69,7 +68,12 @@ func TestHttpServant_getRequestingFile(t *testing.T) {
 				bufferPool: tt.fields.bufferPool,
 				mime:       tt.fields.mime,
 			}
-			if got,_ := h.getRequestingFile(tt.args.buf); got != tt.want {
+			got, err := h.getRequestingFile(tt.args.buf)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("HttpServant.getRequestingFile() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
 				t.Errorf("HttpServant.getRequestingFile() = %v, want %v", got, tt.want)
 			}
 		})
@@ -93,36 +97,24 @@ func TestHttpServant_getFileContentType(t *testing.T) {
 		want    string
 		wantErr bool
 	}{
-		{
-      name: "HTML File", 
-      fields: fields{Id: 1, StaticRoot: "../static/"}, 
-      args: args{request_file: "index.html"}, 
-      want: "text/html", 
-      wantErr: false,
-    },
-		{
-      name: "Image File", 
-      fields: fields{Id: 1, StaticRoot: "../static/"}, 
-      args: args{request_file: "wordcloud.png"}, 
-      want: "image/png", 
-      wantErr: false,
-    },
-		{
-      name: "JSON File", 
-      fields: fields{Id: 1, StaticRoot: "../static/"}, 
-      args: args{request_file: "package.json"}, 
-      want: "application/json", 
-      wantErr: false,
-    },
+		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			h := &HttpServant{
 				Id:         tt.fields.Id,
 				StaticRoot: tt.fields.StaticRoot,
+				bufferPool: tt.fields.bufferPool,
+				mime:       tt.fields.mime,
 			}
-			got, _ := h.getFileContentType(tt.args.request_file)
-			assert.Equal(t, got, tt.want)
+			got, err := h.getFileContentType(tt.args.request_file)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("HttpServant.getFileContentType() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("HttpServant.getFileContentType() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }

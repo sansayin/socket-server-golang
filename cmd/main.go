@@ -22,10 +22,10 @@ import (
 const (
 	SERVER_HOST       = "0.0.0.0"
 	SERVER_PORT       = "9988"
-	MAX_PROC_ROUTINES = 20000
+	MAX_PROC_ROUTINES = 10
 	SOCKET_TIMEOUT    = 100
-	LONG_CONNECTION   = true
-	DEBUG_MODE        = true
+	IS_LONG_CONNECTION   = false 
+	IS_DEBUG_MODE        = true
 )
 
 var L = log.Printf
@@ -38,7 +38,7 @@ var (
 )
 
 type metrics struct {
-	routines  prometheus.Gauge
+	routines prometheus.Gauge
 }
 
 func NewMetrics(reg prometheus.Registerer) *metrics {
@@ -53,9 +53,6 @@ func NewMetrics(reg prometheus.Registerer) *metrics {
 	return m
 }
 
-func initMonitor() {
-
-}
 
 func main() {
 	flag.BoolVar(&bProf, "pprof", false, "turn on pprof")
@@ -85,15 +82,12 @@ func main() {
 
 	/******Metric End*********/
 
-	server := net.NewSocketServer(net.WithMaxRoutines(MAX_PROC_ROUTINES), net.WithDebug(true), net.WithLongConn(true))
+	server := net.NewSocketServer(net.WithMaxRoutines(MAX_PROC_ROUTINES), net.WithDebug(IS_DEBUG_MODE), net.WithLongConn(IS_LONG_CONNECTION))
 	//server.AddServant(&net.ProtoBufServant{Id: 1})
 	server.AddServant(&net.HttpServant{Id: 2, StaticRoot: "./static"})
 
 	ticker := time.NewTicker(10 * time.Second)
-	ctx, stop := signal.NotifyContext(context.Background(),
-		os.Interrupt,
-		syscall.SIGTERM,
-		syscall.SIGQUIT)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
 
 	go func() {
 		for {

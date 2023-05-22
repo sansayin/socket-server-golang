@@ -10,7 +10,7 @@ import (
 func TestNewClientDict(t *testing.T) {
 	tests := []struct {
 		name string
-		want *ClientDisct
+		want *ClientDict
 	}{
 		// TODO: Add test cases.
 	}
@@ -23,7 +23,7 @@ func TestNewClientDict(t *testing.T) {
 	}
 }
 
-func TestClientDisct_Get(t *testing.T) {
+func TestClientDict_Get(t *testing.T) {
 	type fields struct {
 		mutex sync.RWMutex
 		dict  map[*net.Conn]bool
@@ -37,18 +37,18 @@ func TestClientDisct_Get(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sc := &ClientDisct{
+			sc := &ClientDict{
 				mutex: tt.fields.mutex,
 				dict:  tt.fields.dict,
 			}
 			if got := sc.Get(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ClientDisct.Get() = %v, want %v", got, tt.want)
+				t.Errorf("ClientDict.Get() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestClientDisct_Add(t *testing.T) {
+func TestClientDict_Add(t *testing.T) {
 	type fields struct {
 		mutex sync.RWMutex
 		dict  map[*net.Conn]bool
@@ -65,7 +65,7 @@ func TestClientDisct_Add(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sc := &ClientDisct{
+			sc := &ClientDict{
 				mutex: tt.fields.mutex,
 				dict:  tt.fields.dict,
 			}
@@ -74,7 +74,7 @@ func TestClientDisct_Add(t *testing.T) {
 	}
 }
 
-func TestClientDisct_Del(t *testing.T) {
+func TestClientDict_Del(t *testing.T) {
 	type fields struct {
 		mutex sync.RWMutex
 		dict  map[*net.Conn]bool
@@ -91,7 +91,7 @@ func TestClientDisct_Del(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sc := &ClientDisct{
+			sc := &ClientDict{
 				mutex: tt.fields.mutex,
 				dict:  tt.fields.dict,
 			}

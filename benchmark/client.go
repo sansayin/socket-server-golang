@@ -32,7 +32,6 @@ func main() {
 			continue
 		}
 		conns = append(conns, c)
-		time.Sleep(time.Millisecond)
 	}
 
 	defer func() {
@@ -43,14 +42,14 @@ func main() {
 
 	log.Printf("init %d connections", len(conns))
 
-	tts := time.Second
-	if *connections > 100 {
-		tts = time.Millisecond * 5
-	}
+//	tts := time.Second
+//	if *connections > 100 {
+//		tts = time.Millisecond * 5
+//	}
 
 	for {
 		for i := 0; i < len(conns); i++ {
-			time.Sleep(tts)
+//			time.Sleep(tts)
 			conn := conns[i]
 			log.Printf("Send to %d", i)
       _, err:=conn.Write([]byte("GET / HTTP 1.1\r\n"))
