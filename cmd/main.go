@@ -20,12 +20,12 @@ import (
 )
 
 const (
-	SERVER_HOST       = "0.0.0.0"
-	SERVER_PORT       = "9988"
-	MAX_PROC_ROUTINES = 10
-	SOCKET_TIMEOUT    = 100
-	IS_LONG_CONNECTION   = false 
-	IS_DEBUG_MODE        = true
+	SERVER_HOST        = "0.0.0.0"
+	SERVER_PORT        = "9988"
+	MAX_PROC_ROUTINES  = 20
+	SOCKET_TIMEOUT     = 100
+	IS_LONG_CONNECTION = true 
+	IS_DEBUG_MODE      = true
 )
 
 var L = log.Printf
@@ -52,7 +52,6 @@ func NewMetrics(reg prometheus.Registerer) *metrics {
 	reg.MustRegister(m.routines)
 	return m
 }
-
 
 func main() {
 	flag.BoolVar(&bProf, "pprof", false, "turn on pprof")
@@ -105,13 +104,5 @@ func main() {
 		}
 	}()
 
-	if true {
-		if err := server.StartTCP(SERVER_HOST, SERVER_PORT); err != nil {
-			panic(err)
-		}
-	} else {
-		if err := server.StartUDP(SERVER_PORT); err != nil {
-			panic(err)
-		}
-	}
+	server.StartTCP(SERVER_HOST, SERVER_PORT)
 }

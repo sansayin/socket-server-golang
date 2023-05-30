@@ -1,5 +1,5 @@
 #!/bin/bash
-target=${1:-http://localhost:4195/post}
+target=${1:-http://localhost:8899/post}
 while true # loop forever, until ctrl+c pressed.
 do
 	for i in $(seq 10) # perfrom the inner command 100 times.

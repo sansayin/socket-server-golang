@@ -25,8 +25,6 @@ type HttpServant struct {
 	mime       sync.Map
 }
 
-
-
 // Only GET Roughly Implemented
 func (h *HttpServant) OnRequest(conn net.Conn, msg []byte) []byte {
 	once.Do(func() {
@@ -42,19 +40,19 @@ func (h *HttpServant) OnRequest(conn net.Conn, msg []byte) []byte {
 	header.Reset()
 	defer h.bufferPool.Put(header)
 
-	request_file,err := h.getRequestingFile(msg)
-  if err!=nil{
-    L("%v, %v", string(msg),err)
+	request_file, err := h.getRequestingFile(msg)
+	if err != nil {
+		L("%v, %v", string(msg), err)
 		header.WriteString("HTTP/1.1 404\n\n")
 		return header.Bytes()
-  }
+	}
 
 	f, err := os.Open(h.StaticRoot + "/" + request_file)
 	defer f.Close()
 
 	if err != nil {
 		header.WriteString("HTTP/1.1 404\n\n")
-    L("Open File Error:%v, %v", request_file, err)
+		L("Open File Error:%v, %v", request_file, err)
 		return header.Bytes()
 	}
 	fi, _ := f.Stat()
@@ -68,19 +66,20 @@ func (h *HttpServant) OnRequest(conn net.Conn, msg []byte) []byte {
 
 	}
 	fmt.Fprintf(header, "HTTP/1.1 200 OK\nContent-Type: %s\nContent-Length: %d\r\n\r\n", contentType, fi.Size())
-//	L("Write Back")
+	//	L("Write Back")
 	io.Copy(bufio.NewWriter(header), bufio.NewReader(f))
 	//io.Copy(conn, bufio.NewReader(f))
 	return header.Bytes()
 }
+
 var get = regexp.MustCompile(`^GET\s\/(?P<route>.*)\sHTTP`)
 var post = regexp.MustCompile(`^POST\s\/(?P<route>.*)\sHTTP`)
 
-//Only GET
+// Only GET
 func (h *HttpServant) getRequestingFile(buf []byte) (string, error) {
 	m := get.FindStringSubmatch(string(buf))
 	if m == nil {
-		return  "", errors.New("Skip, Not a GET method")
+		return "", errors.New("Skip, Not a GET method")
 		//panic("no match")
 	}
 	result := make(map[string]string)
